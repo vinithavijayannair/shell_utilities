@@ -231,4 +231,37 @@ def get_remote_log_contents(hostname, username, password, remote_path):
     finally:
         ssh.close()
 
+'''
+This method is an example to run a python command that requires UI interaction remotely
+This method requires PsExec.exe to be available in the remote machine
+'''
+def execute_ui_commands(host, username, password, timeout=600):
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh_client.connect(host, username=username, password=password)
+        python_cmd = "C:\autofoler\location\ui_script.py"
+        cmd = 'C:\\Users\\myhome\\automation\\PSTools\\PsExec.exe /ACCEPTEULA \\\\DESKTOP-LQHGR9M -s -i 1 -u %s -p \'%s\' powershell -ExecutionPolicy Bypass /c \"%s\"' %(host, username, password, python_cmd)
+        stdin, stdout, stderr = ssh_client.exec_command("powershell.exe -Command {}".format(cmd))
+        output = stdout.read().decode()
+        error = stderr.read().decode()
+        exitcode = stdout.channel.recv_exit_status()
+
+        while not stdout.channel.exit_status_ready():
+            counter+=5
+            if counter==timeout/5:
+                break
+            time.sleep(5)
+        if exitcode==0:
+            print(output.strip())
+            return output.strip(), exitcode
+        else:
+            print(error.strip())
+            return error.strip(), exitcode
+    except Exception as e:
+        logger().error("Couldn't download file in remote vm: %s" %str(e))
+        raise e
+    finally:
+        ssh_client.close()
+
 
