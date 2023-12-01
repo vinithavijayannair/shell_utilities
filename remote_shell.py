@@ -9,12 +9,6 @@ from scp import SCPClient
 import zipfile
 import datetime
 
-base_directory = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(base_directory)
-
-from pdqe.logging.logger import logger
-
-
 def invoke_shell(cmd, host, username, password, timeout=120):
     # Simple utility method to ssh to remote machines
     try:
